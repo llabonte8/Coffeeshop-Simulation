@@ -1,6 +1,12 @@
 
 import numpy as np
 
+"""
+The entire purpose of this class is just to hold information regarding an order. 
+In theory, we could just use a tuple or something, but for the sake of 
+readability and scalability I think it is best to use a class. 
+There is not much explaining to do here -- it should be fairly self-explanatory.
+"""
 
 class Order:
     """A class to hold information about an order."""

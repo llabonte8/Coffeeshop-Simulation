@@ -9,6 +9,30 @@ from logger import Logger
 from product import Product
 
 
+"""
+This is the main driver for the simulation. The amount of state 
+variables may make things a little difficult to follow, so I'll provide 
+a more general overview. 
+
+The idea is to break a day into some amount of timesteps, controlled by the 'seconds_per_timestep' variable. 
+Basically all timing is based on this value. Then, we advance the simulation on each timestep and record
+the results. 
+
+The simulation loop is as follows: 
+    1) Initialize state variables (things like the price of goods and the number of customers)
+    2) Loop through all the timesteps for one day
+        a) Update the employees (see employee.py for more info as to what that means)
+        b) If there are free employees, and orders in the queue, assign an employee with an order 
+        c) Calculate the chance that a customer will arrive 
+            i) Depends on the likelyhood of a customer showing up that hour, 
+                the length of the queue, and the price of the drinks 
+        d) If a customer arrives, choose an order for them and add it to the queue 
+    3) Save any statistics generated
+    4) Repeat for however many days we are simulating
+
+"""
+
+
 class Store:
     def __init__(self) -> None:
 

@@ -2,6 +2,14 @@
 import csv
 
 
+"""
+The idea here is to make a little mini database for any data we want to write to a file. 
+The database is organized by columns; to add data, you must specify which column it belongs to. 
+Unfortunately, the csv package only deals with rows, so the bulk of the code here is transforming 
+lists of columns into lists of rows, gracefully dealing with differently sized columns. 
+A more concrete explanation is offered in the 'write' method.
+"""
+
 class Logger:
     def __init__(self, column_names: list[str]):
         self.data: dict[str, list[float]] = {}

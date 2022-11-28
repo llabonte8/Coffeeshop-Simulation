@@ -2,6 +2,17 @@
 import numpy as np
 import math 
 
+
+"""
+This class provides the code to simulate random market prices. 
+The class is given a volatility (how large the random movement can be) 
+and mean price (the median line that the price will generally adhere to). 
+Genuine randomness would not suit our purposes here, which is why 
+we're not using geometric brownian motion. The overview for generating prices is as follows:
+    1) Add a random movement to the current price (sample from a normal distribution)
+    2) Limit the price to between double and half of the mean 
+"""
+
 class Product:
     """Class to simulate the market price of a product"""
     def __init__(self, volatility: float, mean_price: float) -> None:

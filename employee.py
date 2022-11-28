@@ -1,6 +1,14 @@
 
 import numpy
 
+"""
+This class, for all intents and purposes, is a timer. That is it. 
+
+When we accept an order, the timer is set to a random normal value centered at 90 seconds. 
+To decrement the timer, the 'update' method is called, and the timer is reduced by however many 
+seconds have passed. 
+Once the timer hits zero, the employee is free to make another drink. 
+"""
 
 
 class Employee:
