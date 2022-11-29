@@ -10,7 +10,6 @@ and mean price (the median line that the price will generally adhere to).
 Genuine randomness would not suit our purposes here, which is why 
 we're not using geometric brownian motion. The overview for generating prices is as follows:
     1) Add a random movement to the current price (sample from a normal distribution)
-    2) Limit the price to between double and half of the mean 
 """
 
 class Product:
@@ -27,13 +26,10 @@ class Product:
     def gen_price(self) -> float:
         #Add a random increase or decrease to the price
         self.price += np.random.normal(0, self.volatility) + self.drift
-        #Limit the price to mean/1.5 <= price <= mean*1.5
-        self.price = max(self.mean_price / 1.5, self.price)
-        self.price = min(self.mean_price * 1.5, self.price)
 
         #Drift is set to the distance between the mean and current price, 
         #then scaled with the volatility so the change is not too drastic
-        self.drift = (self.mean_price - self.price) * self.volatility * 0.6
+        self.drift = (self.mean_price - self.price) * 0.05
         return self.price
 
 

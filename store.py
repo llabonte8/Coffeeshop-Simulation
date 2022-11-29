@@ -62,9 +62,9 @@ class Store:
         self.queue: list[Order] = []
 
         #~18c per cup of milk 
-        self.milk = Product(0.005, 0.18)
+        self.milk = Product(0.003, 0.18)
         #~4c per gram of roast coffee
-        self.coffee = Product(0.004, 0.04)
+        self.coffee = Product(0.002, 0.04)
         #.02c per gram of sugar 
         self.sugar = Product(0.0002, 0.002)
 
@@ -90,7 +90,6 @@ class Store:
         # This is an average, so it should be scaled by the number of days simulated
         self.avg_hourly_customers = [x / num_days for x in self.avg_hourly_customers]
         for x in self.avg_hourly_customers: self.logger.add_data("Average Hourly Customers", x)
-
         self.logger.write()
 
     def simulate_day(self) -> None:
@@ -182,7 +181,6 @@ class Store:
         self.logger.add_data("Market Milk Price", milk_price)
         self.logger.add_data("Market Coffee Price", coffee_price)
         self.logger.add_data("Market Sugar Price", sugar_price)
-
         
         self.logger.add_data("Daily Milk Cost", daily_milk_cost)
         self.logger.add_data("Daily Coffee Cost", daily_coffee_cost)
