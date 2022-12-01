@@ -10,10 +10,7 @@ There is not much explaining to do here -- it should be fairly self-explanatory.
 
 class Order:
     """A class to hold information about an order."""
-    def __init__( \
-            self, milk_price_cup: float, coffee_price_g: float, \
-            sugar_price_g: float, drink_size_oz: float, drink_price: float \
-        ) -> None:
+    def __init__(self, drink_size_oz: float, drink_price: float) -> None:
         
         # ~1.5g coffee per oz of drink
         self.coffee_used_g = max(0, np.random.normal(loc=1.5, scale=0.13)) * drink_size_oz

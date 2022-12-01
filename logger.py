@@ -23,9 +23,9 @@ class Logger:
         else:
             raise KeyError("Key {} not found".format(name))
 
-    def write(self):
-        """Write the output data to 'output.csv'."""
-        with open("output.csv", 'w') as csvout:
+    def write(self, filepath: str):
+        """Write the output data to filepath."""
+        with open(filepath, 'w') as csvout:
             writer = csv.writer(csvout)
             
             row = []

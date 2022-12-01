@@ -1,10 +1,8 @@
 
-from math import factorial, exp
 import numpy as np
 from employee import Employee
 import customer
 from order import Order
-import random 
 from logger import Logger
 from product import Product
 
@@ -34,10 +32,13 @@ The simulation loop is as follows:
 
 
 class Store:
-    def __init__(self) -> None:
+    def __init__(self, drink_price: float, num_employees: int, expected_daily: int) -> None:
+
+        if num_employees < 1: raise Exception("Number of employees must be >= 1")
 
         self.logger = Logger([
             "Average Hourly Customers",
+            "Max Hourly Queue Length",
             "Total Daily Customers",
             "Daily Walkout Customers",
             "Market Milk Price",
@@ -54,43 +55,50 @@ class Store:
         ])
         
         # How many customers we expect, total
-        self.expected_daily_customers: int = 300
+        self.expected_daily_customers: int = expected_daily
         # The hour where the most customers should show up
         self.mean_visiting_hour: float = 2.5
 
-        self.employees: list[Employee] = [Employee(), Employee()]
+        self.employees: list[Employee] = [Employee() for _ in range(num_employees)]
         self.queue: list[Order] = []
 
         #~18c per cup of milk 
         self.milk = Product(0.003, 0.18)
         #~4c per gram of roast coffee
         self.coffee = Product(0.002, 0.04)
-        #.02c per gram of sugar 
+        #.2c per gram of sugar 
         self.sugar = Product(0.0002, 0.002)
 
-        #Drink size oz, price
-        self.menu: dict[float, float] = {
-            12: 2.5,
-            16: 3,
-            20: 3.5,
-        }
+        #Drink prize per oz 
+        self.drink_price_oz: float = drink_price
         
         self.seconds_per_timestep: int = 10
         self.timesteps_per_hour: int = (int)(60 * 60 / self.seconds_per_timestep)
         self.hours_per_day: int = 8
 
+        self.daily_revenue: float = 0
 
         self.avg_hourly_customers: list[float] = [0] * self.hours_per_day
+        self.avg_hourly_queue: list[float] = [0] * self.hours_per_day
        
-    def simulate(self, num_days: int):
-        """Simulate a given number of days"""
+    def simulate(self, num_days: int, log: bool = True) -> float:
+        """Simulate a given number of days and return total revenue"""
+
+        income: float = 0
+
         for _ in range(num_days):
             self.simulate_day()
+            income += self.daily_revenue
 
         # This is an average, so it should be scaled by the number of days simulated
         self.avg_hourly_customers = [x / num_days for x in self.avg_hourly_customers]
+        self.avg_hourly_queue = [x / num_days for x in self.avg_hourly_queue]
         for x in self.avg_hourly_customers: self.logger.add_data("Average Hourly Customers", x)
-        self.logger.write()
+        for x in self.avg_hourly_queue: self.logger.add_data("Max Hourly Queue Length", x)
+
+        if log: self.logger.write('output.csv')
+
+        return income
 
     def simulate_day(self) -> None:
         """Simulate a single day"""
@@ -100,6 +108,7 @@ class Store:
         total_customers: int = 0
         total_walkouts: int = 0
         hourly_customers: float = 0
+        hourly_queue: float = 0
 
         daily_milk_cost: float = 0
         daily_sugar_cost: float = 0 
@@ -120,6 +129,8 @@ class Store:
 
         #Loop through all timesteps
         for timestep in range(total_timesteps):
+
+            hourly_queue += len(self.queue)
 
             #Loop through all employees and update them
             for employee in self.employees:
@@ -148,10 +159,10 @@ class Store:
                 # Reduce the chance back to where it was
                 chance_of_customer -= 1
                 
-                # Create a random order from the list of options
-                drink_size = random.choice(list(self.menu.keys()))
-                drink_cost = self.menu[drink_size]
-                random_order = Order(milk_price, coffee_price, sugar_price, drink_size, drink_cost)
+                # Create a random order from the list of options with average drink size = 16oz
+                drink_size = np.random.normal(loc=16, scale=2)
+                drink_cost = drink_size * self.drink_price_oz
+                random_order = Order(drink_size, drink_cost)
 
                 # Given the length of the queue and price of the drink, see if the customer will stay
                 if customer.will_spawn(len(self.queue), random_order):
@@ -166,8 +177,11 @@ class Store:
             if (timestep + 1) % self.timesteps_per_hour == 0: 
                 # The hourly customers should be logged and then reset
                 self.avg_hourly_customers[curr_hour] += hourly_customers
+                self.avg_hourly_queue[curr_hour] += hourly_queue / self.timesteps_per_hour
+                hourly_queue = 0
                 hourly_customers = 0
                 curr_hour += 1 
+                tmp = 0
 
 
         # Min wage in MA is 14.25
@@ -190,3 +204,4 @@ class Store:
         self.logger.add_data("Gross Daily Income", daily_total_income)
         self.logger.add_data("Gross Daily Expense", daily_total_expense)
         self.logger.add_data("Net Daily Income", daily_total_income - daily_total_expense)
+        self.daily_revenue = daily_total_income - daily_total_expense
