@@ -1,6 +1,7 @@
 
 import math
 from logger import Logger
+from store import Store
 
 class Model:
     def __init__(self, expected_daily) -> None:
@@ -90,3 +91,21 @@ def gen_data():
 
 def optimal_for(expected_daily: int) -> tuple:
     return Model(expected_daily).run()
+
+
+def test_model():
+    l = Logger(['Functional Revenue', 'Agent Revenue', 'Drink Price'])
+    m = Model(150)
+    s = Store(0, 1, 150)
+
+    x = 0.06
+    while x < 0.5:
+        l.add_data('Functional Revenue', m.simulate(x, 1))
+        s.drink_price_oz = x 
+        l.add_data('Agent Revenue', s.simulate(1, False))
+        l.add_data('Drink Price', x)
+        x += 0.01
+    l.write('test_model.csv')
+
+
+test_model()

@@ -26,6 +26,7 @@ def transform_data(data: pandas.DataFrame, columns: list[str], timestep: str, va
 def run():
     all_sim_data = pandas.read_csv('output.csv')
     optimize_data = pandas.read_csv('optimize.csv')
+    model_test_data = pandas.read_csv('test_model.csv')
 
     seaborn.set_theme(style='white', context='talk')
     plt.rcParams["figure.figsize"] = (8.3, 8.3)
@@ -38,7 +39,7 @@ def run():
     
     #Daily customers vs Walkout customers 
     data = transform_data(all_sim_data, columns=['Total Daily Customers', 'Daily Walkout Customers'], timestep='Days', value_name='Customers', var_name='Interaction Type')
-    daily_customers = seaborn.relplot(data, x='Days', y='Customers', hue='Interaction Type', kind='line', palette='muted').figure
+    daily_customers = seaborn.relplot(data, x='Days', y='Customers', hue='Interaction Type', kind='line', palette='muted').set(ylim=0).figure
 
     #Market product prices 
     data = transform_data(all_sim_data, columns=['Market Milk Price', 'Market Coffee Price', 'Market Sugar Price'], timestep='Days', value_name='Price', var_name='Product')
@@ -59,12 +60,18 @@ def run():
 
     #Gross income, gross expense, net income 
     data = transform_data(all_sim_data, columns=['Gross Daily Income', 'Gross Daily Expense', 'Net Daily Income'], timestep='Days', value_name='Money', var_name='Category')
-    income = seaborn.relplot(data, x='Days', y='Money', hue='Category', kind='line', palette='muted').set(ylim=(0, 1500)).figure
+    income = seaborn.relplot(data, x='Days', y='Money', hue='Category', kind='line', palette='muted').set(ylim=0).figure
 
     #Optimizations 
     data = optimize_data.filter(items=['Daily Customers', 'Price per Ounce', 'Number of Employees']).dropna()
     data = data.melt(id_vars=['Daily Customers'], value_vars=['Price per Ounce', 'Number of Employees'], value_name='Count', var_name='Type')
     optimizations = seaborn.relplot(data, x='Daily Customers', y='Count', hue='Type', kind='line', palette='muted').figure
+
+
+    #Model test 
+    data = model_test_data.filter(items=['Functional Revenue', 'Agent Revenue', 'Drink Price']).dropna()
+    data = data.melt(id_vars=['Drink Price'], value_vars=['Functional Revenue', 'Agent Revenue'], value_name='Revenue', var_name='Model Type')
+    model_test = seaborn.relplot(data, x='Drink Price', y='Revenue', hue='Model Type', kind='line', palette='muted').figure
 
     seaborn.despine()
 
@@ -76,5 +83,9 @@ def run():
     costs.savefig('images/costs.png', format='png')
     income.savefig('images/income.png', format='png')
     optimizations.savefig('images/optimizations.png', format='png')
+    model_test.savefig('images/model_test.png', format='png')
+
+
+run()
 
 
