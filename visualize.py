@@ -7,19 +7,18 @@ import matplotlib.pyplot as plt
 '''
     A good portion of the code here is just reformatting the data so that Seaborn & Matplotlib are happy with it. 
     To change the appearence of the graphs, focus on the lines of the form:
-        `variable = seaborn.plot(data, ...).figure`
+        `variable = seaborn.plot(data, ...)`
     Some figures, like the pie chart, use `data.plot` instead, but the idea is the same. 
     By changing the options of the function, or adding additional options, the appearnce will change. 
     Check the Seaborn and Matplotlib documentation for a rundown of the different options.
 '''
 
 
-# Helper function to melt the data to a format Seaborn likes better (https://seaborn.pydata.org/tutorial/data_structure.html#long-form-vs-wide-form-data)
-def transform_data(data: pandas.DataFrame, columns: list[str], timestep: str, value_name: str, var_name: str) -> pandas.DataFrame:
-        data = data.filter(items=columns).dropna()
-        data[timestep] = data.index 
-        data = data.melt(id_vars=[timestep], value_vars=columns, value_name=value_name, var_name=var_name)
-        return data
+# Helper function to filter out columns
+def transform_data(data: pandas.DataFrame, columns: list[str], timestep: str) -> pandas.DataFrame:
+    data = data.filter(items=columns).dropna()
+    data[timestep] = data.index 
+    return data
 
 
 
@@ -28,64 +27,76 @@ def run():
     optimize_data = pandas.read_csv('optimize.csv')
     model_test_data = pandas.read_csv('test_model.csv')
 
-    seaborn.set_theme(style='white', context='talk')
-    plt.rcParams["figure.figsize"] = (8.3, 8.3)
-    plt.rcParams['font.size'] = '16'
-    plt.rcParams['legend.fontsize'] = '14'
+    plt.rcParams['figure.figsize'] = 8, 11
+    plt.rcParams['font.size'] = 12
+
+    seaborn.despine()
 
     #Average Hourly Customers Plot
-    data = transform_data(all_sim_data, ['Average Hourly Customers'], 'Hours', 'Customers', '')    
-    avg_customers = seaborn.barplot(data, x='Hours', y='Customers', palette='Blues', hue='Customers', dodge=False).legend([], [], frameon=False).figure
+    hourly_data = transform_data(all_sim_data, ['Average Hourly Customers'], timestep='Hours')
+    daily_data = transform_data(all_sim_data, columns=['Total Daily Customers', 'Daily Walkout Customers'], timestep='Days')
+
+    fig, [hourly_customers_plot, customer_info_plot] = plt.subplots(2)
+    customer_info_plot.set_title("Successful Customers vs. Walkout Customers")
+    customer_info_plot.set_xlabel('Days')
+    customer_info_plot.set_ylabel('Customers')
+    hourly_customers_plot.set_xlabel('Hours')
+    hourly_customers_plot.set_ylabel('Customers')
+    hourly_customers_plot.set_title("Average Hourly Customers")
+
+    hourly_customers_plot.bar(hourly_data['Hours'], hourly_data['Average Hourly Customers'])
+    customer_info_plot.plot(daily_data['Days'], daily_data['Total Daily Customers'], label='Sucessful Customers')
+    customer_info_plot.plot(daily_data['Days'], daily_data['Daily Walkout Customers'], label='Walkout Customers')
+    plt.legend(bbox_to_anchor=(0.5, -0.3), loc='lower center')
+    plt.savefig('images/customer_info.png', dpi=130, bbox_inches='tight', pad_inches=0.4)
+    plt.clf()
+
+    #Market product prices, cost breakdown, income/expenses
+    market_data = transform_data(all_sim_data, ['Market Milk Price', 'Market Coffee Price', 'Market Sugar Price'], timestep='Days')
+    cost_breakdown = [
+        all_sim_data['Daily Milk Cost'].mean(), all_sim_data['Daily Coffee Cost'].mean(), 
+        all_sim_data['Daily Sugar Cost'].mean(), all_sim_data['Daily Employee Cost'].mean()
+    ]
+    income_data = transform_data(all_sim_data, columns=['Gross Daily Income', 'Net Daily Income', 'Gross Daily Expense'], timestep='Days')
+
+    market_data_plot = plt.subplot(2, 2, 1)
+    cost_breakdown_plot = plt.subplot(2, 2, 2)
+    income_data_plot = plt.subplot(2, 1, 2)
+
+    market_data_plot.set_title("Market Goods Price")
+    market_data_plot.set_ylabel('Price')
+    market_data_plot.set_xlabel('Days')
+
+    income_data_plot.set_title('Income and Expenses')
+    income_data_plot.set_ylabel('Money')
+    income_data_plot.set_xlabel('Days')
+
+    cost_breakdown_plot.set_title('Cost Breakdown')
+
+    for col in market_data.loc[:, market_data.columns != 'Days']: market_data_plot.plot(market_data['Days'], market_data[col])
+    cost_breakdown_plot.pie(cost_breakdown, autopct='%.2f%%', radius=1.2)
+    for col in income_data.loc[:, income_data.columns != 'Days']: income_data_plot.plot(income_data['Days'], income_data[col], label=col)
     
-    #Daily customers vs Walkout customers 
-    data = transform_data(all_sim_data, columns=['Total Daily Customers', 'Daily Walkout Customers'], timestep='Days', value_name='Customers', var_name='Interaction Type')
-    daily_customers = seaborn.relplot(data, x='Days', y='Customers', hue='Interaction Type', kind='line', palette='muted').set(ylim=0).figure
-
-    #Market product prices 
-    data = transform_data(all_sim_data, columns=['Market Milk Price', 'Market Coffee Price', 'Market Sugar Price'], timestep='Days', value_name='Price', var_name='Product')
-    market_prices = seaborn.relplot(data, x='Days', y='Price', hue='Product', kind='line', palette='muted').figure
-
-
-    # Cost breakdown
-    data = all_sim_data.filter(items=
-                ['Daily Milk Cost', 'Daily Coffee Cost', 'Daily Sugar Cost', 'Daily Employee Cost']
-            ).dropna()
-    data = pandas.DataFrame(index=['Milk', 'Coffee', 'Sugar', 'Employee'], data={
-        'Price': [data['Daily Milk Cost'].mean(), data['Daily Coffee Cost'].mean(), 
-                  data['Daily Sugar Cost'].mean(), data['Daily Employee Cost'].mean()]
-    }).sort_values('Price', ascending=False)
-    seaborn.set_palette('muted')
-    costs = data.plot(kind='pie', y='Price', autopct='%.2f%%', labels=None, ylabel='').figure
-
-
-    #Gross income, gross expense, net income 
-    data = transform_data(all_sim_data, columns=['Gross Daily Income', 'Gross Daily Expense', 'Net Daily Income'], timestep='Days', value_name='Money', var_name='Category')
-    income = seaborn.relplot(data, x='Days', y='Money', hue='Category', kind='line', palette='muted').set(ylim=0).figure
+    market_data_plot.legend(['Milk', 'Coffee', 'Sugar'], bbox_to_anchor=(-0.55, 0.5), loc='center')
+    income_data_plot.legend(['Gross Income', 'Net Income', 'Gross Expense'], bbox_to_anchor=(-0.3, 0.5), loc='center')
+    cost_breakdown_plot.legend(['Milk', 'Coffee', 'Sugar', 'Employees'], loc='center', bbox_to_anchor=(1.3, 0.8))
+    plt.savefig('images/financial_info.png', format='png', bbox_inches='tight', pad_inches=0.4)
+    plt.clf()
 
     #Optimizations 
     data = optimize_data.filter(items=['Daily Customers', 'Price per Ounce', 'Number of Employees']).dropna()
     data = data.melt(id_vars=['Daily Customers'], value_vars=['Price per Ounce', 'Number of Employees'], value_name='Count', var_name='Type')
-    optimizations = seaborn.relplot(data, x='Daily Customers', y='Count', hue='Type', kind='line', palette='muted').figure
+    optimizations = seaborn.relplot(data, x='Daily Customers', y='Count', hue='Type', kind='line', palette='muted')
 
 
     #Model test 
     data = model_test_data.filter(items=['Functional Revenue', 'Agent Revenue', 'Drink Price']).dropna()
     data = data.melt(id_vars=['Drink Price'], value_vars=['Functional Revenue', 'Agent Revenue'], value_name='Revenue', var_name='Model Type')
-    model_test = seaborn.relplot(data, x='Drink Price', y='Revenue', hue='Model Type', kind='line', palette='muted').figure
-
-    seaborn.despine()
+    model_test = seaborn.relplot(data, x='Drink Price', y='Revenue', hue='Model Type', kind='line', palette='muted')
 
 
     # Save all figures
-    avg_customers.savefig('images/hourly_customers.png', format='png')
-    daily_customers.savefig('images/daily_customers.png', format='png')
-    market_prices.savefig('images/market_prices.png', format='png')
-    costs.savefig('images/costs.png', format='png')
-    income.savefig('images/income.png', format='png')
-    optimizations.savefig('images/optimizations.png', format='png')
-    model_test.savefig('images/model_test.png', format='png')
-
-
-run()
+    optimizations.figure.savefig('images/optimizations.png', format='png')
+    model_test.figure.savefig('images/model_test.png', format='png')
 
 
