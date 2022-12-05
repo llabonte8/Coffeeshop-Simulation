@@ -81,7 +81,7 @@ class Store:
         self.avg_hourly_customers: list[float] = [0] * self.hours_per_day
         self.avg_hourly_queue: list[float] = [0] * self.hours_per_day
        
-    def simulate(self, num_days: int, log: bool = True, write_fname: str = 'output.csv') -> float:
+    def simulate(self, num_days: int, write_fname: str, log: bool = True) -> float:
         """Simulate a given number of days and return total revenue"""
 
         income: float = 0

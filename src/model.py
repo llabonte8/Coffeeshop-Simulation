@@ -2,6 +2,10 @@
 import math
 from logger import Logger
 from store import Store
+import os 
+
+
+c_dir = os.path.dirname(__file__)
 
 class Model:
     def __init__(self, expected_daily) -> None:
@@ -87,7 +91,7 @@ def gen_data():
         l.add_data('Price per Ounce', price)
         l.add_data('Number of Employees', e_num)
         l.add_data('Daily Customers', x)
-    l.write('optimize.csv')
+    l.write(os.path.join(c_dir, '../data/optimize.csv'))
 
 def optimal_for(expected_daily: int) -> tuple:
     return Model(expected_daily).run()
@@ -102,10 +106,8 @@ def test_model():
     while x < 0.5:
         l.add_data('Functional Revenue', m.simulate(x, 1))
         s.drink_price_oz = x 
-        l.add_data('Agent Revenue', s.simulate(1, False))
+        l.add_data('Agent Revenue', s.simulate(1, '', False))
         l.add_data('Drink Price', x)
         x += 0.01
-    l.write('test_model.csv')
+    l.write(os.path.join(c_dir, '../data/test_model.csv'))
 
-
-test_model()

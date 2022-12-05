@@ -2,6 +2,7 @@
 import pandas
 import seaborn
 import matplotlib.pyplot as plt
+import os
 
 
 '''
@@ -14,6 +15,9 @@ import matplotlib.pyplot as plt
 '''
 
 
+c_dir = os.path.dirname(__file__)
+
+
 # Helper function to filter out columns
 def transform_data(data: pandas.DataFrame, columns: list[str], timestep: str) -> pandas.DataFrame:
     data = data.filter(items=columns).dropna()
@@ -23,11 +27,11 @@ def transform_data(data: pandas.DataFrame, columns: list[str], timestep: str) ->
 
 
 def run():
-    all_sim_data = pandas.read_csv('output.csv')
-    t1_data = pandas.read_csv('trial_1.csv')
-    t2_data = pandas.read_csv('trial_2.csv')
-    optimize_data = pandas.read_csv('optimize.csv')
-    model_test_data = pandas.read_csv('test_model.csv')
+    all_sim_data = pandas.read_csv(os.path.join(c_dir, '../data/output.csv'))
+    t1_data = pandas.read_csv(os.path.join(c_dir, '../data/trial_1.csv'))
+    t2_data = pandas.read_csv(os.path.join(c_dir, '../data/trial_2.csv'))
+    optimize_data = pandas.read_csv(os.path.join(c_dir, '../data/optimize.csv'))
+    model_test_data = pandas.read_csv(os.path.join(c_dir, '../data/test_model.csv'))
 
     plt.rcParams['figure.figsize'] = 8, 11
     plt.rcParams['font.size'] = 12
