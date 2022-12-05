@@ -54,7 +54,7 @@ def run():
     customer_info_plot.plot(daily_data['Days'], daily_data['Total Daily Customers'], label='Sucessful Customers')
     customer_info_plot.plot(daily_data['Days'], daily_data['Daily Walkout Customers'], label='Walkout Customers')
     plt.legend(bbox_to_anchor=(0.5, -0.3), loc='lower center')
-    plt.savefig('images/customer_info.png', dpi=130, bbox_inches='tight', pad_inches=0.4)
+    plt.savefig(os.path.join(c_dir, '../images/customer_info.png'), dpi=130, bbox_inches='tight', pad_inches=0.4)
     plt.clf()
 
     #Market product prices, cost breakdown, income/expenses
@@ -87,7 +87,7 @@ def run():
     market_data_plot.legend(['Milk', 'Coffee', 'Sugar'], bbox_to_anchor=(-0.55, 0.5), loc='center')
     income_data_plot.legend(['Gross Income', 'Net Income', 'Gross Expense', 'Break Even'], bbox_to_anchor=(-0.3, 0.5), loc='center')
     cost_breakdown_plot.legend(['Milk', 'Coffee', 'Sugar', 'Employees'], loc='center', bbox_to_anchor=(1.3, 0.8))
-    plt.savefig('images/financial_info.png', format='png', bbox_inches='tight', pad_inches=0.4)
+    plt.savefig(os.path.join(c_dir, '../images/financial_info.png'), format='png', bbox_inches='tight', pad_inches=0.4)
     plt.clf()
 
 
@@ -127,7 +127,7 @@ def run():
     )
     
     plt.gcf().set_size_inches(18, 8)
-    plt.savefig('images/comparison.png', bbox_inches='tight', pad_inches=0.4, dpi=130)
+    plt.savefig(os.path.join(c_dir, '../images/comparison.png'), bbox_inches='tight', pad_inches=0.4, dpi=130)
     plt.clf()
 
     #Optimizations 
@@ -143,7 +143,7 @@ def run():
 
 
     # Save all figures
-    optimizations.figure.savefig('images/optimizations.png', format='png')
-    model_test.figure.savefig('images/model_test.png', format='png')
+    # optimizations.figure.savefig('images/optimizations.png', format='png')
+    # model_test.figure.savefig('images/model_test.png', format='png')
 
 
