@@ -10,6 +10,7 @@ import model
 s = store.Store(drink_price=.258, num_employees=1, expected_daily=250)
 #Simulate 50 days
 s.simulate(100)
+s.logger.write('trial_2.csv')
 
 visualize.run()
 

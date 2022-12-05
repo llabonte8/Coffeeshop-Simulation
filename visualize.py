@@ -24,6 +24,8 @@ def transform_data(data: pandas.DataFrame, columns: list[str], timestep: str) ->
 
 def run():
     all_sim_data = pandas.read_csv('output.csv')
+    t1_data = pandas.read_csv('trial_1.csv')
+    t2_data = pandas.read_csv('trial_2.csv')
     optimize_data = pandas.read_csv('optimize.csv')
     model_test_data = pandas.read_csv('test_model.csv')
 
@@ -76,11 +78,52 @@ def run():
     for col in market_data.loc[:, market_data.columns != 'Days']: market_data_plot.plot(market_data['Days'], market_data[col])
     cost_breakdown_plot.pie(cost_breakdown, autopct='%.2f%%', radius=1.2)
     for col in income_data.loc[:, income_data.columns != 'Days']: income_data_plot.plot(income_data['Days'], income_data[col], label=col)
+    income_data_plot.plot(income_data['Days'], [0] * len(income_data['Days']), label='Break Even', linestyle='dashed', color='gray')
     
     market_data_plot.legend(['Milk', 'Coffee', 'Sugar'], bbox_to_anchor=(-0.55, 0.5), loc='center')
-    income_data_plot.legend(['Gross Income', 'Net Income', 'Gross Expense'], bbox_to_anchor=(-0.3, 0.5), loc='center')
+    income_data_plot.legend(['Gross Income', 'Net Income', 'Gross Expense', 'Break Even'], bbox_to_anchor=(-0.3, 0.5), loc='center')
     cost_breakdown_plot.legend(['Milk', 'Coffee', 'Sugar', 'Employees'], loc='center', bbox_to_anchor=(1.3, 0.8))
     plt.savefig('images/financial_info.png', format='png', bbox_inches='tight', pad_inches=0.4)
+    plt.clf()
+
+
+
+    #Trial run comparison 
+    income_data = pandas.DataFrame()
+    income_data['Trial 1'] = t1_data['Net Daily Income']
+    income_data['Trial 2'] = t2_data['Net Daily Income']
+    income_data['Days'] = income_data.index
+
+    interaction_data = [
+            t1_data['Daily Walkout Customers'].mean(),
+            t2_data['Daily Walkout Customers'].mean(),
+            t1_data['Total Daily Customers'].mean(),
+            t2_data['Total Daily Customers'].mean()
+    ]
+
+    income_comparison = plt.subplot(1, 2, 1)
+    interaction_comparison = plt.subplot(1, 2, 2)
+
+    income_comparison.set_ylabel('Income')
+    income_comparison.set_xlabel('Days')
+    income_comparison.set_title('Trial 1 vs. Trial 2 Net Income')
+    
+    interaction_comparison.set_ylabel('Customers')
+    interaction_comparison.set_xlabel('Trial Run')
+    interaction_comparison.set_title('Trial 1 vs. Trial 2 Interaction Type')
+
+    income_comparison.plot(income_data['Days'], income_data['Trial 1'])
+    income_comparison.plot(income_data['Days'], income_data['Trial 2'])
+    income_comparison.plot(income_data['Days'], [0] * len(income_data['Trial 1']), linestyle='dashed', color='gray')
+    income_comparison.legend(['Trial 1', 'Trial 2', 'Break Even'])
+    
+    interaction_comparison.bar(
+        ['Trial 1 Walkout', 'Trial 2 Walkout', 'Trial 1 Success', 'Trial 2 Success'],
+        interaction_data
+    )
+    
+    plt.gcf().set_size_inches(18, 8)
+    plt.savefig('images/comparison.png', bbox_inches='tight', pad_inches=0.4, dpi=130)
     plt.clf()
 
     #Optimizations 
