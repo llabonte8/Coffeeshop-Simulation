@@ -5,16 +5,6 @@ import matplotlib.pyplot as plt
 import os
 
 
-'''
-    A good portion of the code here is just reformatting the data so that Seaborn & Matplotlib are happy with it. 
-    To change the appearence of the graphs, focus on the lines of the form:
-        `variable = seaborn.plot(data, ...)`
-    Some figures, like the pie chart, use `data.plot` instead, but the idea is the same. 
-    By changing the options of the function, or adding additional options, the appearnce will change. 
-    Check the Seaborn and Matplotlib documentation for a rundown of the different options.
-'''
-
-
 c_dir = os.path.dirname(__file__)
 
 
